@@ -297,6 +297,35 @@ class TestGitHubIssues(base.PyMySQLTestCase):
         self.assertTrue(c.fetchone()[0])
         conn.close()
 
+    def test_issue_157(self):
+        conn = self.connections[0]
+        cur = conn.cursor()
+        sql=";".join([
+            "drop table if exists my_table",
+            "create table my_table ( value VARCHAR(30))",
+            "insert into my_table (value) values ('test value')"
+        ])
+        cur.execute(sql)
+        cur.close()
+        conn.commit()
+        cur2=conn.cursor()
+        cur2.execute("select value from my_table")
+        has_records=False
+        for i, r in enumerate(cur2):
+            has_records=True
+            assert i==0
+            assert r[0]=='test value'
+        cur2.close()
+        conn.commit()
+        cur3=conn.cursor()
+        cur3.execute("select value from my_table where 0=1")
+        for r in cur3:
+            assert False
+        cur3.execute("drop table if exists my_table")
+        cur3.close()
+        assert has_records
+
+
 __all__ = ["TestOldIssues", "TestNewIssues", "TestGitHubIssues"]
 
 if __name__ == "__main__":
