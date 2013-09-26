@@ -32,7 +32,7 @@ class DatabaseTest(unittest.TestCase):
             self.BLOBUText = unicode().join(unichr(i) for i in range(16834)).replace("'", "")
         else:
             self.BLOBUText = "".join(chr(i) for i in range(16834)).replace("'", "")
-        self.BLOBBinary = self.db_module.Binary(''.join([chr(i) for i in range(256)] * 16))
+        self.BLOBBinary = self.db_module.Binary(''.join([chr(i) for i in range(256)] * 16).replace("'", ""))
 
     leak_test = True
 
