@@ -11,6 +11,26 @@ from .err import (
 
 insert_values = re.compile(r'\svalues\s*(\(.+\))', re.IGNORECASE)
 
+def mark_quoted(sql):
+    squote = dquote = False
+    marks = [False] * len(sql)
+    for i, c in enumerate(sql):
+        if squote:
+            if c == "'":
+                squote = False
+            else:
+                marks[i] = True
+        elif dquote:
+            if c == '"':
+                dquote = False
+            else:
+                marks[i] = True
+        elif c == "'":
+            squote = True
+        elif c == '"':
+            dquote = True
+    return marks
+
 
 class Cursor(object):
     '''
@@ -24,6 +44,7 @@ class Cursor(object):
         from weakref import proxy
         self.connection = proxy(connection)
         self.description = None
+        self.delimiter = ';'
         self.rownumber = 0
         self.rowcount = -1
         self.arraysize = 1
@@ -207,12 +228,30 @@ class Cursor(object):
             self.errorhandler(self, IndexError, "out of range")
         self.rownumber = r
 
-    def _query(self, q):
+    def _split_sql(self, sql):
+        statements = []
+        quoted = mark_quoted(sql)
+        i = sql.find(self.delimiter)
+        while i >= 0:
+            if quoted[i]:
+                i = sql.find(self.delimiter, i+1)
+                continue
+            statements.append(sql[:i])
+            sql = sql[i+1:]
+            quoted = quoted[i+1:]
+            i = sql.find(self.delimiter)
+        statements.append(sql)
+        return filter(None, statements)
+
+    def _query(self, qs):
         conn = self._get_db()
-        self._last_executed = q
-        conn.query(q)
-        self._do_get_result()
-        return self.rowcount
+        rowcount = 0
+        for q in self._split_sql(qs):
+            self._last_executed = q
+            conn.query(q)
+            self._do_get_result()
+            rowcount += self.rowcount
+        return rowcount
 
     def _do_get_result(self):
         conn = self._get_db()

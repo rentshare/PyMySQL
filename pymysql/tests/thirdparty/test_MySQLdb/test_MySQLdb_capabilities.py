@@ -53,6 +53,7 @@ class test_MySQLdb(capabilities.DatabaseTest):
                           list(enumerate('ash birch cedar larch pine'.split())))
             db.commit()
 
+            c.delimiter = '|'
             c.execute("""
             CREATE PROCEDURE test_sp(IN t VARCHAR(255))
             BEGIN
@@ -60,6 +61,7 @@ class test_MySQLdb(capabilities.DatabaseTest):
             END
             """ % self.table)
             db.commit()
+            c.delimiter = ';'
 
             c.callproc('test_sp', ('larch',))
             rows = c.fetchall()
