@@ -259,6 +259,20 @@ class TestGitHubIssues(base.PyMySQLTestCase):
         finally:
             c.execute("drop table issue66")
 
+    def test_issue_98(self):
+        conn = self.connections[0]
+        cur = conn.cursor()
+        cur.delimiter = '|'
+        cur.execute("""
+          CREATE PROCEDURE test()
+          BEGIN
+            SELECT 1;
+          END
+        """)
+        cur.delimiter = ';'
+        cur.execute("DROP PROCEDURE IF EXISTS test")
+        cur.close()
+
     def test_issue_114(self):
         conn = pymysql.connect(charset="utf8", **self.databases[0])
         conn.autocommit(False)
