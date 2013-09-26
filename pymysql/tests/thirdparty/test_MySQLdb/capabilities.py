@@ -27,11 +27,11 @@ class DatabaseTest(unittest.TestCase):
         db = self.db_module.connect(*self.connect_args, **self.connect_kwargs)
         self.connection = db
         self.cursor = db.cursor()
-        self.BLOBText = ''.join([chr(i) for i in range(256)] * 100);
+        self.BLOBText = ''.join([chr(i) for i in range(256)] * 100).replace("'", "")
         if PY2:
-            self.BLOBUText = unicode().join(unichr(i) for i in range(16834))
+            self.BLOBUText = unicode().join(unichr(i) for i in range(16834)).replace("'", "")
         else:
-            self.BLOBUText = "".join(chr(i) for i in range(16834))
+            self.BLOBUText = "".join(chr(i) for i in range(16834)).replace("'", "")
         self.BLOBBinary = self.db_module.Binary(''.join([chr(i) for i in range(256)] * 16))
 
     leak_test = True
