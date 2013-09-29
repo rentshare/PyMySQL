@@ -23,7 +23,7 @@ THE SOFTWARE.
 
 '''
 
-VERSION = (0, 5, None)
+VERSION = (0, 5, 1)
 
 from ._compat import text_type
 from .constants import FIELD_TYPE
